@@ -72,46 +72,56 @@ class ReflexAgent(Agent):
 
         currentPos = currentGameState.getPacmanPosition()
         currentFood = currentGameState.getFood()
-        currentFoodPosition = currentFood.asList()
+        currentFoodPositions = currentFood.asList()
         currentGhostStates = currentGameState.getGhostStates()
         currentGhostPositions = [ghost.getPosition() for ghost in currentGhostStates]
         currentScaredTimes = [ghostState.scaredTimer for ghostState in currentGameState.getGhostStates()]
-        currentCapsules = currentGameState.getCapsules()
+        currentCapsulePosition = currentGameState.getCapsules()
 
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
-        newFoodPosition = newFood.asList()
+        newFoodPositions = newFood.asList()
         newGhostStates = successorGameState.getGhostStates()
         newGhostPositions = [ghost.getPosition() for ghost in newGhostStates]
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-        newCapsules = successorGameState.getCapsules()
+        newCapsulePosition = successorGameState.getCapsules()
+
+        newFoodDistances = [util.manhattanDistance(newPos, food) for food in newFoodPositions]
+        currentFoodDistances = [util.manhattanDistance(currentPos, food) for food in currentFoodPositions]
+        newCapsuleDistances = [util.manhattanDistance(newPos, capsule) for capsule in newCapsulePosition]
+        currentCapsuleDistances = [util.manhattanDistance(currentPos, capsule) for capsule in currentCapsulePosition]
+        newGhostDistances = [util.manhattanDistance(newPos, ghost) for ghost in newGhostPositions]
+        currentGhostDistances = [util.manhattanDistance(currentPos, ghost) for ghost in currentGhostPositions]
+
+        if successorGameState.isWin():
+            return float("inf")
+        elif successorGameState.isLose():
+            return float("-inf")
 
         score = 0
 
-
         # Pacman ate a capsule
-        if len(newCapsules) < len(currentCapsules):
+        if len(newCapsuleDistances) < len(currentCapsuleDistances):
             score += 15
 
-        if min(util.manhattanDistance(newPos, capsule) for capsule in newCapsules) < min(util.manhattanDistance(newPos, capsule) for capsule in currentCapsules):
+        if newCapsuleDistances and min(newCapsuleDistances) < min(currentCapsuleDistances):
             score += 10
         
         # Pacman ate a food
-        if len(newFood.asList()) < len(currentGameState.getFood().asList()):
-            score += 15
+        if len(newFoodPositions) < len(currentFoodDistances):
+            score += 50
         
         #Add if closer to food
-        if min(util.manhattanDistance(newPos, food) for food in newFoodPosition) < min(util.manhattanDistance(currentPos, food) for food in currentFoodPosition):
-            score += 20
+        if newFoodDistances and min(newFoodDistances) < min(currentFoodDistances):
+            score += 30
         
         # Any ghosts are scared, get closer to ghost
-        ghostScore = 20 if min(util.manhattanDistance(newPos, ghost) for ghost in newGhostPositions) > min(util.manhattanDistance(currentPos, ghost) for ghost in currentGhostPositions) else -10
-        if sum(newScaredTimes) > 0:
-            ghostScore *= -1
+        if newGhostDistances:
+            ghostScore = 20 if min(newGhostDistances) > min(currentGhostDistances) else -10
+            if sum(newScaredTimes) > 0:
+                ghostScore *= -1
         
         score += ghostScore
-
-        score -= 5 if action == Directions.STOP else 0
 
         return successorGameState.getScore() - currentGameState.getScore() + score
 

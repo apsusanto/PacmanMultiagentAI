@@ -302,7 +302,7 @@ def betterEvaluationFunction(currentGameState):
         capsuleScore = 0
     
     if ghostDistances:
-        ghostScore = min(ghostDistances) / 2.0 * (1 if sum(scaredTimes) > 0 else -1)
+        ghostScore = min(ghostDistances) / 2.0 * (0.7 if sum(scaredTimes) > 0 else -1.5)
     else:
         ghostScore = 0
     # print(foodScore, capsuleScore, ghostScore)

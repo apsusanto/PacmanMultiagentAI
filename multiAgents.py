@@ -289,9 +289,21 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION:
+      - Using average of reciprocal food distances, pacman will always value moves that leads pacman closer to other foods.
+      Average is used here because pacman will eventually have to eat all of the foods to win, therefore, it finds actions that leads him
+      closer to all foods on average.
+      - Same logic with capsule distances, except on the event that currently a capsule is in effect.
+      If a capsule is in effect, as indicated by sum of scaredTimes > 0, then we will invert this capsule score to negative, to prevent
+      pacman from wasting a power pellet by eating one when another is still in effect.
+      - As for ghost distances, pacman uses the minimum of all ghost distances. This is due to the fact that it should try to dodge all
+      ghosts, therefore, it technically only always needs to dodge the closest one. We want closest ghost to have the most effect, so having
+      average might blur this. Inversion to negative is done to reduce the final score.
+      However, if a capsule is in effect and ghost is currently scared, then we instead invert this to positive, which signs that pacman should
+      chases after ghosts.
+      
+      For each of these three factors, they are adjusted to be roughly equal first, then added weight multiplier to indicate which is more significant.
     """
-    "*** YOUR CODE HERE ***"
     score = currentGameState.getScore()
     ghostPositions = [ghost.getPosition() for ghost in currentGameState.getGhostStates()]
     scaredTimes = [ghost.scaredTimer for ghost in currentGameState.getGhostStates()]
